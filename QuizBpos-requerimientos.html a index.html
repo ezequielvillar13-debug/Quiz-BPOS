@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cuestionario de requerimientos de software</title>
+<style>
+:root{--bg:#f1ecfa;--card:#fff;--ink:#1f1b2d;--mut:#6b6580;--pri:#673ab7;--pri2:#ede7f6;--bd:#d9d2ea;--err:#c62828;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17131f;--card:#241e31;--ink:#efeaf9;--mut:#b3aac9;--pri:#b39ddb;--pri2:#3a2f55;--bd:#4a4063;--err:#ef9a9a}}
+:root[data-theme="dark"]{--bg:#17131f;--card:#241e31;--ink:#efeaf9;--mut:#b3aac9;--pri:#b39ddb;--pri2:#3a2f55;--bd:#4a4063;--err:#ef9a9a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);height:6px;background:var(--bd);z-index:5}.bar i{display:block;height:100%;background:var(--pri);transition:width .25s}
+.wrap{max-width:640px;margin:0 auto;padding:16px 14px 40px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:18px;margin-bottom:12px;border-top:8px solid var(--pri)}
+h1{font-size:26px;margin:0 0 8px}h2{font-size:21px;margin:0 0 4px}p{margin:6px 0;color:var(--mut)}
+.q{padding:14px 0;border-top:1px solid var(--bd)}.q:first-of-type{border-top:0}
+.ql{display:block;font-weight:600;margin-bottom:8px}.rq{color:var(--err)}
+input[type=text],input:not([type]),textarea,select{width:100%;font:inherit;color:var(--ink);background:transparent;border:0;border-bottom:2px solid var(--bd);padding:8px 2px;border-radius:0;outline:0}
+textarea{border:2px solid var(--bd);border-radius:8px;padding:8px}
+input:focus,textarea:focus,select:focus{border-color:var(--pri)}
+select{width:auto;background:var(--card)}
+.opt{display:flex;gap:10px;align-items:flex-start;padding:7px 4px;cursor:pointer}.opt input{margin-top:4px;accent-color:var(--pri);flex:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--bd);border-radius:999px;padding:7px 14px}.chip:has(input:checked){background:var(--pri2);border-color:var(--pri);font-weight:600}
+.extra{margin-top:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:14px;color:var(--mut)}.extra input{flex:1;min-width:160px}
+.nav{display:flex;gap:10px;justify-content:space-between;margin-top:8px}
+.btn{font:inherit;font-weight:600;border:0;border-radius:8px;padding:11px 20px;background:var(--pri);color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+:root[data-theme="dark"] .btn,.dk .btn{color:#17131f}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#17131f}}
+.btn.g{background:transparent;color:var(--pri);border:1px solid var(--bd)}
+#msg{color:var(--err);font-weight:600;margin:8px 2px;min-height:1px}
+#sum{width:100%;min-height:260px;font:13px ui-monospace,Menlo,monospace;border:2px solid var(--bd);border-radius:8px;padding:10px;background:var(--bg);color:var(--ink)}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}.sm{font-size:13px;color:var(--mut)}
+</style></head><body><div id="app"></div>
+<script>
+const WA="",EMAIL=""; /* opcional: número de WhatsApp (52...) y correo que recibe las respuestas */
+const AREAS=[['pos','Punto de venta y cobro'],['inv','Inventario y almacén'],['comp','Compras y proveedores'],['pac','Seguimiento de pacientes y citas'],['cont','Contabilidad, finanzas y cobranza'],['cfdi','Facturación electrónica (CFDI)'],['caja','Caja, cortes y gastos'],['clie','Clientes, lealtad, promociones y cupones'],['nom','Empleados, asistencia y nómina'],['linea','Pedidos en línea y entregas a domicilio'],['rest','Restaurante: mesas, comandas, cocina y recetas'],['serv','Servicios y órdenes de trabajo'],['rep','Reportes y gráficas'],['seg','Usuarios, roles y seguridad']];
+const YN='|Sí;No';
+const SEC=[
+{id:'gen',t:'Datos del negocio',q:['T*Nombre del negocio','TRazón social y RFC','TGiro o tipo de negocio (clínica, restaurante, tienda...)','TDirección principal','TNúmero de sucursales','TNúmero de empleados','T*Contacto (nombre, teléfono y correo)','TPersona que decide la compra','P¿Usan hoy un sistema, Excel o libreta? ¿Cuál?']},
+{id:'areas',areas:1,t:'¿Qué áreas de tu negocio quieres cubrir?'},
+{id:'pos',k:'pos',t:'Punto de venta (POS)',q:['CTipos de venta|Mostrador;Mesas;Para llevar;Domicilio;En línea','CFormas de pago|Efectivo;Tarjeta;Transferencia;Crédito;Pago mixto;Vales','CDescuentos y promociones|Porcentaje;Monto;2x1;Combos;Cupones;Por horario','CTicket|Impresora térmica;WhatsApp;Correo;Sin ticket','RCortes de caja|Por día;Por turno;Por cajero','TCajas o puntos de cobro','R¿Venden a crédito o con apartados?'+YN,'P¿Quién cancela ventas y hace devoluciones? ¿Hay propinas o comisiones a vendedores?']},
+{id:'inv',k:'inv',t:'Inventario y almacén',q:['CQué venden|Productos;Servicios;Insumos o recetas','TCantidad aproximada de productos','CControl por|Lote;Caducidad;Número de serie;Talla o color;Código de barras','R¿Varios almacenes o traspasos?'+YN,'R¿Alertas de stock mínimo?'+YN,'R¿Un producto se arma con varios insumos (recetas)?'+YN,'R¿Cargar el inventario desde Excel?'+YN,'P¿Cómo hacen el conteo físico y registran mermas?']},
+{id:'comp',k:'comp',t:'Compras y proveedores',q:['TCantidad de proveedores','RCompras|De contado;A crédito;Ambas','R¿Guardar facturas y notas de compra en el sistema?'+YN,'R¿Usan órdenes de compra?'+YN,'R¿Actualizar el costo con cada compra?'+YN,'R¿Avisos de pagos pendientes a proveedores?'+YN]},
+{id:'pac',k:'pac',t:'Seguimiento de pacientes y citas',q:['CTipo de servicio|Médico general;Especialista;Dental;Nutrición;Psicología;Fisioterapia;Estética;Veterinaria','CExpediente|Datos personales;Antecedentes;Historial de consultas;Diagnósticos;Tratamientos;Recetas;Estudios y archivos;Fotografías;Consentimientos firmados','CCitas|Agenda por doctor;Recordatorios por WhatsApp o SMS;Reagendar;Lista de espera;Citas en línea','CSeguimiento|Evolución por consulta;Próxima cita o control;Recordatorio de tratamiento;Aviso de pacientes que no regresan','CCobro|Por consulta;Paquetes;Abonos;Seguros;Factura al paciente','TPacientes al mes y número de doctores','PDatos de salud: ¿quién puede ver los expedientes? ¿Tienen aviso de privacidad? ¿Deben cumplir alguna norma? (consúltalo con tu asesor legal)']},
+{id:'cont',k:'cont',t:'Contabilidad, finanzas y cobranza',q:['RQuién lleva la contabilidad|Contador externo;Interno;Nadie aún','CQué debe hacer el sistema|Ingresos y gastos;Cuentas por cobrar;Cuentas por pagar;Conciliación bancaria;Estado de resultados;Balance;Flujo de efectivo;IVA e ISR;Pólizas;Exportar al contador','TFormato que pide el contador (Excel, XML, otro)','R¿Presupuestos o centros de costos?'+YN,'TRégimen fiscal']},
+{id:'cfdi',k:'cfdi',t:'Facturación electrónica (CFDI)',q:['TSistema o proveedor con el que facturan hoy','CTipos de factura|Ingreso;Global;Nota de crédito;Complemento de pago;Nómina','R¿Cuándo piden factura los clientes?|Al momento;Después;Ambos','R¿Autofactura por portal o QR?'+YN,'R¿Cuentan con certificados (CSD)?|Sí;No;No sé']},
+{id:'caja',k:'caja',t:'Caja, cortes y gastos',q:['R¿Fondo de caja y retiros de efectivo?'+YN,'R¿Subir factura o nota de cada gasto?'+YN,'TCuentas bancarias y terminales de tarjeta','TComisión por tarjeta (%)','R¿Archivar los cierres de caja por mes?'+YN]},
+{id:'clie',k:'clie',t:'Clientes, lealtad y promociones',q:['TBase de clientes (cantidad y formato)','CLealtad|Puntos;Monedero;Descuentos por frecuencia;Ninguna','CContacto|WhatsApp;Correo;SMS;Cumpleaños;Encuestas','R¿Venden a crédito a algunos clientes?'+YN]},
+{id:'nom',k:'nom',t:'Empleados, asistencia y nómina',q:['TEmpleados y puestos','CAsistencia|Reloj checador;Huella;App;Manual','RNómina|Semanal;Quincenal;Mensual;La lleva el contador','R¿Comisiones o bonos?'+YN,'R¿Vacaciones y permisos?'+YN]},
+{id:'linea',k:'linea',t:'Pedidos en línea y entregas',q:['CVenden por|Tienda propia;WhatsApp;Redes sociales;Plataformas de reparto','R¿Repartidores propios?'+YN,'TZonas y costo de envío','R¿El cliente sigue su pedido?'+YN]},
+{id:'rest',k:'rest',t:'Restaurante, cocina y recetas',q:['CFunciones|Plano de mesas;Comandas;Pantalla de cocina;División de cuentas;Meseros por mesa','R¿Recetas con costo y merma?'+YN,'R¿Las ventas descuentan los insumos del inventario?'+YN]},
+{id:'serv',k:'serv',t:'Servicios y órdenes de trabajo',q:['CFunciones|Órdenes de servicio;Técnicos asignados;Garantías;Mantenimiento programado;Equipos del cliente','P¿Cómo cotizan y cómo aprueban los clientes?']},
+{id:'rep',k:'rep',t:'Reportes y gráficas',q:['CReportes que necesitan|Ventas por periodo;Ventas por producto;Ventas por vendedor;Ventas por forma de pago;Utilidad y margen;Inventario valuado;Cuentas por cobrar y pagar;Gastos;Corte de caja;Estado de resultados y balance;Pacientes y citas','CExtras|Gráficas;Exportar a Excel;Exportar a PDF','T¿Quién ve los reportes y cada cuándo?']},
+{id:'seg',k:'seg',t:'Usuarios, roles y seguridad',q:['TPersonas que usarán el sistema','CRoles|Dueño;Gerente;Cajero;Doctor;Recepción;Contador;Almacén','RAcceso|Código y PIN;Correo y contraseña;Huella','R¿Bitácora de quién cambió qué?'+YN,'P¿Qué información no debe ver cada rol? ¿Quién hace los respaldos?']},
+{id:'tec',t:'Equipo y tecnología',q:['CDispositivos|Computadora;Tableta;Celular;Caja registradora','CEquipo|Impresora de tickets;Lector de códigos;Cajón de dinero;Báscula;Terminal bancaria;Cámara o huella','R¿Tienen internet estable?|Sí;No;A veces','R¿Necesitan trabajar sin internet?'+YN,'RDónde se usará|Un local;Varias sucursales;Desde cualquier lugar','P¿Quieren conectar WhatsApp, Google, Excel u otro sistema?']},
+{id:'dat',t:'Información y documentos',q:['CInformación que quieren cargar|Productos y precios;Clientes;Pacientes;Proveedores;Inventario actual;Ventas históricas;Cuentas por cobrar y pagar;Empleados','TFormato y cantidad aproximada','CDocumentos que entregarán|Logo;Lista de productos (Excel);Lista de clientes o pacientes;Formato de ticket o factura;Formatos de recetas o consentimientos;Constancia fiscal;Ejemplos de reportes;Fotos del local']},
+{id:'hoy',t:'Cómo trabajan hoy',q:['PDescribe un día normal de trabajo','P¿Qué hacen hoy a mano o en papel?','P*Los 3 problemas principales que quieren resolver','P¿Dónde se pierden dinero, tiempo o información?']},
+{id:'log',t:'Qué esperan lograr',q:['P*Las 5 funciones imprescindibles para empezar','PFunciones deseables para más adelante','PLo que NO quieren que tenga el sistema','P¿Cómo sabrán que fue un éxito?']},
+{id:'tie',t:'Tiempos, presupuesto y soporte',q:['TFecha en que quieren empezar a usarlo','R¿Lo prefieren por fases?|Por fases;Todo junto','TPresupuesto aproximado','TForma de pago preferida','CCapacitación|Presencial;Videollamada;Manuales;Videos','CSoporte|WhatsApp;Correo;Teléfono;Visita','TResponsable del proyecto de su lado','TQuién aprueba los cambios']}
+];
+const $=s=>document.querySelector(s),app=$('#app');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const parse=s=>{const r=s[1]==='*',x=s.slice(r?2:1).split('|');return{t:s[0],r,l:x[0],o:x[1]?x[1].split(';'):[]}};
+let A={areas:{}},i=0;
+try{const d=JSON.parse(localStorage.getItem('cq1')||'null');if(d&&d.A){A=d.A;A.areas=A.areas||{};i=d.i||0}}catch(e){}
+const save=()=>{try{localStorage.setItem('cq1',JSON.stringify({A,i}))}catch(e){}};
+const yes=k=>A.areas[k]&&A.areas[k].v&&A.areas[k].v!=='No';
+const steps=()=>[{intro:1},...SEC.filter(s=>!s.k||yes(s.k)),{end:1}];
+function qh(k,q){const v=A[k];let h=`<div class="q"><label class="ql">${esc(q.l)}${q.r?' <span class="rq">*</span>':''}</label>`;
+ if(q.t==='T')h+=`<input data-k="${k}" value="${esc(v||'')}" placeholder="Tu respuesta">`;
+ else if(q.t==='P')h+=`<textarea data-k="${k}" rows="3" placeholder="Tu respuesta">${esc(v||'')}</textarea>`;
+ else q.o.forEach(o=>{const on=q.t==='R'?v===o:(v||[]).includes(o);h+=`<label class="opt"><input type="${q.t==='R'?'radio':'checkbox'}" name="${k}" data-k="${k}" value="${esc(o)}"${on?' checked':''}><span>${esc(o)}</span></label>`});
+ return h+'</div>'}
+function summary(){const o=['CUESTIONARIO DE REQUERIMIENTOS DE SOFTWARE',''];
+ SEC.forEach(s=>{if(s.k&&!yes(s.k))return;o.push('== '+s.t+' ==');
+  if(s.areas)AREAS.forEach(([k,n])=>{const a=A.areas[k];o.push('- '+n+': '+(a&&a.v?a.v+(a.v!=='No'&&a.p?' (prioridad '+a.p+')':'')+(a.n?' — '+a.n:''):'sin responder'))});
+  else s.q.forEach((x,n)=>{const q=parse(x),v=A[s.id+'.'+n],t=Array.isArray(v)?v.join(', '):v;if(t)o.push('- '+q.l+': '+t)});o.push('')});
+ return o.join('\n')}
+function render(){const S=steps();if(i>=S.length)i=S.length-1;const s=S[i];
+ let h=`<div class="bar"><i style="width:${(i+1)/S.length*100}%"></i></div><div class="wrap">`;
+ if(s.intro)h+=`<div class="card"><h1>Cuestionario de requerimientos de software</h1><p>Nos ayuda a saber qué áreas de tu negocio cubrirá el sistema. Tarda unos 15 minutos.</p><p>Solo verás las preguntas de las áreas que elijas. Tus respuestas se guardan en este dispositivo mientras avanzas, y al final las copias y nos las envías.</p><p class="rq">* Obligatorio</p></div>`;
+ else if(s.end)h+=`<div class="card"><h2>Revisar y enviar</h2><p>Estas son tus respuestas. Cópialas y envíalas a quien te mandó este cuestionario.</p><textarea id="sum" readonly>${esc(summary())}</textarea><div class="row"><button class="btn" id="cp">Copiar respuestas</button>${WA?`<a class="btn g" target="_blank" rel="noopener" href="https://wa.me/${WA}">Abrir WhatsApp</a>`:''}${EMAIL?`<a class="btn g" href="mailto:${EMAIL}?subject=Cuestionario de requerimientos">Abrir correo</a>`:''}</div><div id="msg"></div><p class="sm">Si no se copia solo, mantén presionado el texto y elige Copiar.</p><div class="row"><button class="btn g" id="rs">Borrar mis respuestas</button></div></div>`;
+ else if(s.areas){h+=`<div class="card"><h2>${esc(s.t)}</h2><p>Elige Sí, Más adelante o No, y una prioridad del 1 (urgente) al 3.</p>`;
+  AREAS.forEach(([k,n])=>{const c=A.areas[k]||{};h+=`<div class="q"><label class="ql">${esc(n)}</label><div class="chips">${['Sí','Más adelante','No'].map(o=>`<label class="opt chip"><input type="radio" name="a_${k}" data-a="${k}" data-f="v" value="${o}"${c.v===o?' checked':''}><span>${o}</span></label>`).join('')}</div><div class="extra" id="x_${k}"${c.v&&c.v!=='No'?'':' hidden'}>Prioridad <select data-a="${k}" data-f="p">${['1','2','3'].map(p=>`<option${(c.p||'2')===p?' selected':''}>${p}</option>`).join('')}</select><input data-a="${k}" data-f="n" placeholder="¿Qué esperas que haga? (opcional)" value="${esc(c.n||'')}"></div></div>`});h+='</div>'}
+ else{h+=`<div class="card"><h2>${esc(s.t)}</h2>`;s.q.forEach((x,n)=>h+=qh(s.id+'.'+n,parse(x)));h+='</div>'}
+ h+=`<div id="msg2" style="color:var(--err);font-weight:600"></div><div class="nav"><button class="btn g" id="bk"${i?'':' style="visibility:hidden"'}>Atrás</button>${s.end?'':`<button class="btn" id="nx">${s.intro?'Comenzar':'Siguiente'}</button>`}</div></div>`;
+ app.innerHTML=h;window.scrollTo(0,0);save();
+ const b=$('#bk'),n=$('#nx');if(b)b.onclick=()=>{i--;render()};
+ if(n)n.onclick=()=>{if(s.q){const m=s.q.map((x,j)=>[parse(x),s.id+'.'+j]).find(([q,k])=>q.r&&!(A[k]&&String(A[k]).trim()));if(m){$('#msg2').textContent='Falta responder: '+m[0].l;return}}i++;render()};
+ const cp=$('#cp');if(cp)cp.onclick=async()=>{const t=summary(),ok=()=>$('#msg').style.color='var(--pri)',say=x=>{$('#msg').textContent=x};try{await navigator.clipboard.writeText(t);ok();say('Copiado. Ahora pégalo en tu mensaje.')}catch(e){const ta=$('#sum');ta.select();try{document.execCommand('copy');ok();say('Copiado. Ahora pégalo en tu mensaje.')}catch(_){say('Mantén presionado el texto y elige Copiar.')}}};
+ const rs=$('#rs');if(rs)rs.onclick=()=>{if(confirm('¿Borrar todas tus respuestas?')){A={areas:{}};i=0;render()}}}
+app.addEventListener('input',e=>{const el=e.target,k=el.dataset.k;
+ if(el.dataset.a){const a=el.dataset.a;A.areas[a]=A.areas[a]||{};A.areas[a][el.dataset.f]=el.value;if(el.dataset.f==='v'){const x=$('#x_'+a);x.hidden=el.value==='No';if(!A.areas[a].p)A.areas[a].p='2'}}
+ else if(k){A[k]=el.type==='checkbox'?[...app.querySelectorAll('input[name="'+k+'"]:checked')].map(x=>x.value):el.value}
+ save()});
+render();
+</script></body></html>
